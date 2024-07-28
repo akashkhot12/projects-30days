@@ -1,6 +1,6 @@
 const Users = require("../models/userModel");
 const bcrypt = require("bcrypt");
-
+const jwt  = require('jsonwebtoken');
 
 const userController = {
   register: async (req, res) => {
@@ -19,14 +19,22 @@ const userController = {
           .status(400)
           .json({ msg: "Password is atleast 6 character." });
 
+      // password bcypted
+      const passwordHash = await bcrypt.hash(password, 10);
 
-          const newUsers = new Users({
-            name,email,password
-          })
+      // create new user for storing data into database.
+      const newUsers = new Users({
+        name,
+        email,
+        password: passwordHash,
+      });
 
-          await newUsers.save()
+    //   save data to user table 
+      await newUsers.save();
 
-      res.json({ msg: `${name}registerd success` });
+    //   create jwt token for user 
+
+      res.json({ msg: `${name} Registered Success.` });
     } catch (error) {
       return res.status(500).json({ msg: error.message });
     }
