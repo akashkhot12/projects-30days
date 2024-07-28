@@ -71,6 +71,54 @@ const userController = {
       res.status(500).json({ msg: error.message });
     }
   },
+
+  login: async (req, res) => {
+    try {
+      const { email, password } = req.body;
+
+      const user = await Users.findOne({ email });
+
+      if (!user) return res.status(400).json({ msg: "User does not exists." });
+
+      const isMatch = await bcrypt.compare(password, user.password);
+
+      if (!isMatch) return res.status(400).json({ msg: "Incorrect Password." });
+
+      const accessToken = createAccessToken({ id: user._id });
+      const refreshToken = createRefreshToken({ id: user._id });
+
+      res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        path: "/user/refreshtoken",
+      });
+
+      res.json({ msg: accessToken });
+    } catch (error) {
+      res.status(500).json({ msg: error });
+    }
+  },
+
+  logout: async (req, res) => {
+    try {
+      res.clearCookie("refreshToken", { path: "/user/refreshtoken" });
+
+      return res.status(200).json({ msg: "Log Out" });
+    } catch (error) {
+      res.status(500).json({ msg: error.message });
+    }
+  },
+
+  getUser: async (req, res) => {
+    try {
+      const user = await Users.findById(req.user.id).select("-password");
+
+      if (!user) return res.status(400).json({ msg: "User not found." });
+
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ msg: error.message });
+    }
+  },
 };
 
 const createAccessToken = (payload) => {
