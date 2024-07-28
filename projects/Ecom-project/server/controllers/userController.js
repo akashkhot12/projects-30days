@@ -6,31 +6,31 @@ require("dotenv").config();
 const userController = {
   register: async (req, res) => {
     try {
-      // take credentials from users.
+      // take creadentials from users.
       const { name, email, password } = req.body;
 
-      // check if email already exists.
+      // check email already exist or not.
       const user = await Users.findOne({ email });
       if (user)
         return res.status(400).json({ msg: "Email Already Registered" });
 
-      // check if password length is more than or equal to 6 characters.
+      // check password length is more than or equal to 6 digits.
       if (password.length < 6)
         return res
           .status(400)
-          .json({ msg: "Password is at least 6 characters." });
+          .json({ msg: "Password is atleast 6 character." });
 
-      // hash the password
+      // password bcypted
       const passwordHash = await bcrypt.hash(password, 10);
 
-      // create a new user to store data in the database.
+      // create new user for storing data into database.
       const newUsers = new Users({
         name,
         email,
         password: passwordHash,
       });
 
-      // save data to the user table
+      // save data to user table
       await newUsers.save();
 
       // create jwt token for user
@@ -39,13 +39,13 @@ const userController = {
       // refresh token
       const refreshToken = createRefreshToken({ id: newUsers._id });
 
-      // set cookie
+      // adding cookie
       res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
-        path: "/user/refresh_token",
+        path: "/user/refreshtoken",
       });
 
-      res.json({ accessToken });
+      res.json({ msg: accessToken });
     } catch (error) {
       return res.status(500).json({ msg: error.message });
     }
@@ -56,14 +56,12 @@ const userController = {
       const rf_token = req.cookies.refreshToken;
 
       if (!rf_token) {
-        return res.status(400).json({ msg: "Please login or register." });
+        return res.status(400).json({ msg: "Please login or registered." });
       }
 
       jwt.verify(rf_token, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
-        if (err) {
-          console.error("JWT verify error:", err); // Log the error for debugging
+        if (err)
           return res.status(400).json({ msg: "Please login or register." });
-        }
 
         const accessToken = createAccessToken({ id: user.id });
 
