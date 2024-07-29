@@ -19,6 +19,7 @@ app.listen(PORT, () => {
 // use routes
 
 app.use("/user", require("./routes/userRoutes"));
+app.use("/api", require("./routes/categoryRoutes"));
 
 // connected mongo db
 
