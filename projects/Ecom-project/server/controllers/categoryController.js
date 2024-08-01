@@ -4,9 +4,9 @@ const categoryController = {
   getCategories: async (req, res) => {
     try {
       const categories = await Category.find();
-      res.json(categories);
+      return res.json(categories);
     } catch (error) {
-      res.status(500).json({ msg: error.message });
+      return res.status(500).json({ msg: error.message });
     }
   },
 
@@ -23,14 +23,20 @@ const categoryController = {
 
       await newCategory.save();
 
-      res.status(201).json({ msg: "Created Category." });
+      return res.status(201).json({ msg: "Created Category." });
     } catch (error) {
-      res.status(500).json({ msg: error.message });
+      return res.status(500).json({ msg: error.message });
     }
   },
 
   deleteCategory: async (req, res) => {
-    
+    try {
+      await Category.findByIdAndDelete(req.params.id);
+
+      return res.status(200).json({ msg: "Deleted a Category" });
+    } catch (error) {
+      return res.status(500).json({ msg: error.message });
+    }
   },
 };
 
